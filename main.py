@@ -1,3 +1,20 @@
+#   < A simple program to create mail quickly from templates and mail at proper time>
+#   Copyright (C) <2018>  <Anjandev Momi anjan@momi.ca>
+
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 import argparse
 import os
 import datetime
@@ -104,7 +121,11 @@ def daemon():
 
 
 if __name__ == "__main__":
-    print("Welcome to club mailer!")
+    print("<club mailer>  Copyright (C) <2018>  <Anjandev Momi>")
+    print("This program comes with ABSOLUTELY NO WARRANTY; for details see the `LICENSE` file.")
+    print("This is free software, and you are welcome to redistribute it")
+    print("under certain conditions; see the `LICENSE' file for details.")
+
     parser = argparse.ArgumentParser(description='Automate club communication')
     parser.add_argument('-t', '--template', help='template you wish to use (see folder ./templates/)')
     parser.add_argument('-d', '--daemon', action='store_true', help='run in daemon mode to send messages in ./waiting at proper time', default=False)
