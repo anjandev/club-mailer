@@ -1,0 +1,10 @@
+<#part type="image/png" filename="./img/logolarge.png" disposition=inline>
+<#/part>
+
+MSESS EVENT
+
+Date: {}
+Location: {}
+Price: {}
+
+{}
