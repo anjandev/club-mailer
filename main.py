@@ -19,8 +19,15 @@ import argparse
 import os
 import datetime
 import smtplib
+from shutil import copyfile
+from sys import exit
+
 from os import listdir
 from os.path import isfile, join
+
+from subprocess import Popen, PIPE
+from os import path
+
 
 EXIT_MSG = "Exiting. Remember to run daemon mode (with -d) to send your message."
 WAITING_MSG_FOLDER = './waiting/'
@@ -30,11 +37,13 @@ def writeMsgToDisk(content):
     onlyfiles = [f for f in listdir(WAITING_MSG_FOLDER) if isfile(join(WAITING_MSG_FOLDER, f))]
     newFileName = str(len(onlyfiles))
 
-    with open(os.path.join(WAITING_MSG_FOLDER, newFileName + '.txt'), 'a') as new_mail:
+    filePath =  os.path.join(WAITING_MSG_FOLDER, newFileName + '.txt')
+
+    with open(filePath, 'a') as new_mail:
         for line in content:
             new_mail.write(line)
 
-    print(EXIT_MSG)
+    return filePath
 
 def madlib(template):
     # NOTE: add support for multiple events in one email
@@ -54,7 +63,7 @@ def madlib(template):
                 blanks = line.count(PLACE_HOLDER)
                 replacementsForLine = []
                 for i in range(0, blanks):
-                    replacementsForLine.append(input("Value for blank #" + str(i) + "\n"))
+                    replacementsForLine.append(raw_input("Value for blank #" + str(i) + "\n"))
                 # https://pyformat.info/
                 # Using * because https://stackoverflow.com/questions/26758341/python-3-using-tuples-in-str-format
                 line = line.format(*tuple(replacementsForLine))
@@ -65,23 +74,24 @@ def madlib(template):
     for line in content:
         print(line)
 
-    writeOrNo = input("Write to message? [Y/n]")
+    writeOrNo = raw_input("Write to message? [Y/n]")
 
     while(writeOrNo != "Y" and writeOrNo != "n"):
         print("Please choose Y or n")
-        writeOrNo = input("Write to message? [Y/n] ")
+        writeOrNo = raw_input("Write to message? [Y/n] ")
 
     if writeOrNo == "Y":
         # NOTE: Have to add error handling
-        date_entry = input('Enter a date to send message in YYYY-MM-DD format\n')
+        date_entry = raw_input('Enter a date to send message in YYYY-MM-DD format\n')
         date_entry = date_entry + "\n"
         content = [date_entry] + content
-        writeMsgToDisk(content)
+        filePath = writeMsgToDisk(content)
+        websiteSend(filePath, date_entry)
     elif writeOrNo == "n":
         print(EXIT_MSG)
 
 def prompt(prompt):
-    return input(prompt).strip()
+    return raw_input(prompt).strip()
 
 def sendmail(content):
     # NOTE: Put from and to into a conf file
@@ -119,6 +129,37 @@ def daemon():
                     sendmail(content)
                     #NOTE: add deleting email after sending
 
+
+def websiteSend(postFilePath, postDate):
+    WEBSITE_POSTS_PATH = './msess.github.io/_posts/'
+
+    postTitle = raw_input("Enter post title")
+
+    fileName = postDate + postTitle
+
+    try:
+        copyfile(postFilePath, os.path.join(WEBSITE_POSTS_PATH, fileName))
+    except IOError as e:
+        print("Unable to copy file. %s" % e)
+        exit(1)
+    except:
+        print("Unexpected error:", sys.exc_info())
+        exit(1)
+
+    GIT_PATH = '/usr/bin/git'
+    git_command = [GIT_PATH, 'status']
+    repository  = path.dirname(WEBSITE_POSTS_PATH)
+
+    git_query = Popen(git_command, cwd=repository, stdout=PIPE, stderr=PIPE)
+    (git_status, error) = git_query.communicate()
+
+    if git_query.poll() == 0:
+        git_command = [GIT_PATH, 'add', '--all']
+        git_query = Popen(git_command, cwd=repository, stdout=PIPE, stderr=PIPE)
+        #git_command = [GIT_PATH, 'commit', '-m', 'Added: fileName']
+        #git_query = Popen(git_command, cwd=repository, stdout=PIPE, stderr=PIPE)
+        #git_command = [GIT_PATH, 'push', 'origin', 'master']
+        #git_query = Popen(git_command, cwd=repository, stdout=PIPE, stderr=PIPE)
 
 if __name__ == "__main__":
     print("<club mailer>  Copyright (C) <2018>  <Anjandev Momi>")
