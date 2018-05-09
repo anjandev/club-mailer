@@ -1,0 +1,3 @@
+[submodule "msess.github.io"]
+	path = msess.github.io
+	url = git@github.com:msess/msess.github.io.git
